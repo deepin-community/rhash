@@ -1,0 +1,12 @@
+                        About the OpenSSL/GPL issue.
+
+The LibRHash is compiled with runtime loading of the OpenSSL library.
+It loads OpenSSL assembly optimized algorithms only if package libssl is installed.
+The SHA1, for example, is computed 2 times faster with OpenSSL loaded.
+
+If a GPL program uses LibRHash, then the library acts as a wrapper to libssl.
+The LibRHash exports only its own ABI, thus solving the OpenSSL/GPL
+incompatibility issue.
+
+In any way, calling rhash_set_openssl_mask(0) before rhash_library_init()
+explicitly prevents LibRHash from loading OpenSSL.

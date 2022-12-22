@@ -1,0 +1,362 @@
+rhash (1.4.2-1) unstable; urgency=medium
+
+  * New upstream version 1.4.2
+  * Update pgp signature path in the watch file
+  * Drop obsolete patches
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Sun, 29 Aug 2021 23:17:28 +0300
+
+rhash (1.4.1-2) unstable; urgency=medium
+
+  * d/patches/0001-v1.4.1.patch fix incorrectly reported version
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Thu, 25 Mar 2021 02:26:02 +0300
+
+rhash (1.4.1-1) unstable; urgency=medium
+
+  * New upstream version 1.4.1
+  * d/patches: drop obsolete patch
+  * d/control: bump Standards-Version to 4.5.1
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Fri, 08 Jan 2021 05:03:33 +0300
+
+rhash (1.4.0-1) unstable; urgency=medium
+
+  [ Aleksey Kravchenko ]
+  * New upstream version 1.4.0
+  * debian/patches:
+    - drop already integrated into upstream patch
+    - pick commit from upstream with bugfix for file-lists
+  * d/control
+    - Bump Standards-Version to 4.5.0
+    - Bump Build-Depends debhelper-compat level to 13
+    - Build-Depends: increase libssl version up to 1.1
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Sun, 19 Jul 2020 03:13:21 +0300
+
+rhash (1.3.9-1) unstable; urgency=medium
+
+  [Jelmer Vernooĳ]
+  * d/upstream/metadata: Fix YAML syntax
+
+  [Samuel Henrique]
+  * d/salsa-ci.yml: Enable salsa CI pipelines
+
+  [Aleksey Kravchenko]
+  * New upstream release version 1.3.9
+  * d/upstream/metadata: Fill upstream metadata fields
+  * d/upstream/signing-key.asc: Update upstream public key
+  * d/patches/01_fix_uk_po.patch: Fix uk translation
+  * d/rules: remove override_dh_strip to finish debug symbol migration
+  * d/control
+    - Bump Standards-Version to 4.4.1
+    - Add Rules-Requires-Root: no
+    - Switch Build-Depends from debhelper to debhelper-compat level 12
+  * d/compat: Drop obsolete d/compat
+  * d/copyright: project license got changed to BSD Zero Clause License
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Tue, 17 Dec 2019 22:13:10 +0300
+
+rhash (1.3.8-1) unstable; urgency=medium
+
+  * New upstream release version 1.3.8
+  * d/control: set Homepage url to the one from the upstream README
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Mon, 04 Feb 2019 07:54:18 +0300
+
+rhash (1.3.7-1) unstable; urgency=medium
+
+  * New upstream release version 1.3.7
+  * Bump Standards-Version to 4.3.0
+  * Make upstream key minimal
+  * Add build-depends-package field to the symbols file
+  * Change broken homepage url
+  * Make autopkgtest work without building from sources
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Tue, 25 Dec 2018 01:57:43 +0300
+
+rhash (1.3.6-3) unstable; urgency=medium
+
+  [ Aleksey Kravchenko ]
+  * Bump Standards-Version to 4.2.1
+
+  [ Helmut Grohne ]
+  * Fix FTCBFS: export a suitable compiler (Closes: #906291)
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Fri, 12 Oct 2018 08:12:10 +0300
+
+rhash (1.3.6-2) unstable; urgency=low
+
+  * Multi-arch support
+  * Watch: look for releases, not tags
+  * Install librhash pkg-config file
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Fri, 23 Mar 2018 01:40:09 +0300
+
+rhash (1.3.6-1) unstable; urgency=low
+
+  [ Aleksey Kravchenko ]
+  * New upstream release version 1.3.6
+  * Add upstream/metadata
+  * Update build rules to use configure script
+
+  [ Raphaël Hertzog ]
+  * Update maintainer team email
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Thu, 15 Mar 2018 10:46:22 +0300
+
+rhash (1.3.5-1) unstable; urgency=low
+
+  [ Aleksey Kravchenko ]
+  * New upstream release version 1.3.5
+  * Drop obsolete dbg package
+  * Add test to autopkgtest
+  * Hardenning: support bindnow
+  * Bump Standards-Version to 4.1.3
+  * Switch git links to the Salsa server
+  * Change Maintainer to pkg-security team
+  * Change copyright-format uri to https
+  * Bump compat level to 11
+  * Simplify the override_dh_auto_install rule
+
+  [ Lukas Schwaighofer ]
+  * Use DEB_BUILD_MAINT_OPTIONS = hardening=+all
+  * Use DEB_CFLAGS_MAINT_APPEND variable
+  * Remove unnecessary LD_LIB variable
+  * Remove obsolete checking DEB_BUILD_OPTIONS for 'debug' and 'parallel'
+  * Pass CPPFLAGS to compiler
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Thu, 01 Feb 2018 02:21:57 +0300
+
+rhash (1.3.4-3) unstable; urgency=medium
+
+  [ Gianfranco Costamagna ]
+  * Team upload (collab-maint).
+
+  [ Helmut Grohne ]
+  * Fix FTCBFS: (Closes: #870508)
+    + Let dh_auto_build pass cross compilers to $(MAKE).
+    + Honour DEB_BUILD_OPTIONS=nocheck.
+    + Let dh_strip strip.
+
+ -- Helmut Grohne <helmut@subdivi.de>  Wed, 02 Aug 2017 16:37:09 +0200
+
+rhash (1.3.4-2) unstable; urgency=medium
+
+  * Team upload (collab-maint).
+  * Upload to unstable.
+  * Bump std-version to 4.0.0
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Mon, 10 Jul 2017 15:54:30 +0200
+
+rhash (1.3.4-1) experimental; urgency=medium
+
+  * Team upload (collab-maint).
+  * New upstream release (Closes: #810029, #835260)
+  * Make watch file point to github.
+  * Update std-version to 3.9.8, no changes required.
+  * Bump compat level to 10
+  * Make VCS fields in secure mode
+  * Update libssl runtime dependencies
+  * Follow upstream change and include .so in -dev package
+
+ -- Gianfranco Costamagna <locutusofborg@debian.org>  Mon, 22 May 2017 11:29:05 +0200
+
+rhash (1.3.3-1) unstable; urgency=low
+
+  * New upstream release version 1.3.3
+  * librhash now exports new torrent interface
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Tue, 05 Aug 2014 02:12:06 +0700
+
+rhash (1.3.2-2) unstable; urgency=low
+
+  * fix symlinks installation when building the package
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Fri, 04 Jul 2014 02:53:00 +0700
+
+rhash (1.3.2-1) unstable; urgency=low
+
+  *  New upstream release version 1.3.2
+   - fixed infinite loop while working with symlinks (Closes: #750842)
+   - fixed the hardening-no-relro lintian warning
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Wed, 02 Jul 2014 01:41:59 +0700
+
+rhash (1.3.1-1) unstable; urgency=low
+
+  * New upstream release version 1.3.1
+   - bump Standards-Version to 3.9.5
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Wed, 08 Jan 2014 23:47:28 +0700
+
+rhash (1.3.0-3) unstable; urgency=low
+
+  * Fixed 'Value too large...' error (Closes: #727012)
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Sun, 24 Nov 2013 20:19:26 +0700
+
+rhash (1.3.0-2) unstable; urgency=low
+
+  * Fixed sha3 on big-endian processors
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Sun, 22 Sep 2013 00:51:37 +0700
+
+rhash (1.3.0-1) unstable; urgency=low
+
+  * New upstream release version 1.3.0
+   - switched the package back to unstable
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Mon, 16 Sep 2013 19:48:55 +0700
+
+rhash (1.2.10-1) experimental; urgency=low
+
+  * New upstream release version 1.2.10
+   - switched to Debhelper 9 and Standards-Version 3.9.4
+   - moved language bindings to separate rhash-bindings package
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Tue, 25 Dec 2012 01:55:52 +0700
+
+rhash (1.2.9-8) unstable; urgency=medium
+
+  [ Aleksey Kravchenko ]
+  * Removed DMUA field to switch to new DM permissions management interface
+  [ Asheesh Laroia ]
+  * Slight simplification of debian/rules that aims to fix
+    parallel builds. In particular, we used to build a dynamically
+    linked rhash binary as 'rhash'; now, we build it as 'rhash-shared'
+    like the default of the upstream build system, and later rename it
+    to 'rhash' as needed. (Closes: #687398)
+  [ Gregor Herrmann ]
+  * debian/control: remove alternative build dependency on
+    c-sharp-2.0-compiler, which gets satisfied by mono-devel, and then the
+    needed mono-gmcs is missing. Thanks, Andrey Rahmatullin.
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Wed, 28 Nov 2012 01:47:19 +0700
+
+rhash (1.2.9-7) unstable; urgency=low
+
+  * Fixed dependencies of ruby-rhash
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Sun, 17 Jun 2012 19:10:51 +0700
+
+rhash (1.2.9-6) unstable; urgency=low
+
+  * update for ruby 1.9.1 (Closes: #676110)
+  * security hardening build flags
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Fri, 15 Jun 2012 00:42:51 +0700
+
+rhash (1.2.9-5) unstable; urgency=low
+
+  * Quick fix for ruby1.8 mkmf concurrency bug
+  * Separated build-arch and build-indep targets
+  * Corrected Vcs-* fields in debian/control
+  * Updated rhash package description
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Fri, 11 May 2012 02:12:58 +0700
+
+rhash (1.2.9-4) unstable; urgency=low
+
+  * Fixed failed parallel build on amd64 (Closes: #671989)
+  * Fixed jni compilation on kfreebsd-* archs
+  * Fixed crash of python test on ia64
+  * Extended descriptions to fix lintian informational warnings
+  * Disabled mono compilation for binary-arch builds
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Wed, 09 May 2012 14:26:29 +0700
+
+rhash (1.2.9-3) unstable; urgency=low
+
+  * Fixed javadoc build error
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Thu, 03 May 2012 00:07:23 +0700
+
+rhash (1.2.9-2) unstable; urgency=low
+
+  * Fixed binary-arch builds (Closes: #670205)
+  * Corrected installation directory of ruby extension
+  * Updated LibRHash description
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Sat, 28 Apr 2012 09:21:17 +0700
+
+rhash (1.2.9-1) unstable; urgency=low
+
+  [ Aleksey Kravchenko ]
+    * New upstream release version 1.2.9
+    * copyright: format upgraded to 1.0
+    * librhash0.symbols: changed minimum symbols version to 1.2.6
+    * librhash0.symbols: added two new functions
+    * ruby-rhash: updated to new Ruby policy
+    * mono bindings supported
+  [ Kilian Krause ]
+    * Add DM-Upload-Allowed:yes - congrats Aleksey to your successful DM
+      application!
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Sat, 14 Apr 2012 13:21:44 +0700
+
+rhash (1.2.8-3) unstable; urgency=low
+
+  * fixed loading of the RHash python module (Closes: 652302)
+  * fixed librhash-java compilation on Ubuntu (Closes: 654180)
+  * updated debian/copyright
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Wed, 18 Jan 2012 22:51:54 +0700
+
+rhash (1.2.8-2) unstable; urgency=low
+
+  * Compilation fix for several Debian architectures
+  - fixed librhash-java compilation with gcj (Closes: 644599)
+  - control: added python-rhash dependency on librhash0
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Sun, 09 Oct 2011 13:57:47 +0700
+
+rhash (1.2.8-1) unstable; urgency=low
+
+  * New upstream release version 1.2.8
+   - language bindings for Java, Perl, Python, Ruby
+   - Russian translation
+   - fixed recommended libssl1.0.0 dependency
+   - patched broken re-compilation
+   - fixed a mistype in perl documentation
+   - control: updated Vcs-Git field
+   - copyright: corrected Format field, added Upstream-Contact
+   - copyright: updated Copyright field, mentioned another developer
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Wed, 14 Sep 2011 23:50:14 +0700
+
+rhash (1.2.7-1) unstable; urgency=medium
+
+  * New upstream release version 1.2.7
+   - Fixes security issue (Closes: #632280)
+   - changed author/maintainer name to the way I prefer s/Alexey S/Aleksey/
+   - simplified descriptions of binary packages
+   - written rules in more now standard way, using CFLAGS/LDFLAGS
+   - reworded README.Debian a bit
+   - applied patch from upstream to fix possible segfault
+   - applied patch from upstream to fix glibc runtime warning
+   - applied patch from upstream to repair -openssl option handling
+
+ -- Aleksey Kravchenko <rhash.admin@gmail.com>  Sun, 14 Aug 2011 20:35:00 +0700
+
+rhash (1.2.6-2) unstable; urgency=low
+
+  * Package compilation is fixed for several archs
+
+ -- Alexey S Kravchenko <rhash.admin@gmail.com>  Thu, 30 Jun 2011 01:04:24 +0700
+
+rhash (1.2.6-1) unstable; urgency=low
+
+  * New upstream release version 1.2.6
+   - ABI changed - now librhash0.0 is librhash0
+   - OpenSSL support for faster hash calculation if libssl is installed
+     (fully optional) for both rhash and librhash0
+
+ -- Alexey S Kravchenko <rhash.admin@gmail.com>  Wed, 15 Jun 2011 01:03:34 +0700
+
+rhash (1.2.5-1) unstable; urgency=low
+
+  * Initial release (Closes: #629614)
+  * The library SONAME was changed in the Debian package, see README.Debian
+
+ -- Alexey S Kravchenko <rhash.admin@gmail.com>  Tue, 07 Jun 2011 22:46:05 +0700

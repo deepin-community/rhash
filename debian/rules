@@ -1,0 +1,46 @@
+#!/usr/bin/make -f
+# debian/rules makefile that uses debhelper.
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+-include /usr/share/dpkg/buildtools.mk
+export CC
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DEB_CFLAGS_MAINT_APPEND = -D_FILE_OFFSET_BITS=64
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+CONFIGURE_FLAGS = \
+	--prefix=/usr \
+	--sysconfdir=/etc \
+	--libdir=/usr/lib/$(DEB_HOST_MULTIARCH) \
+	--with-install="install -p -m 755" \
+	--enable-lib-static \
+	--enable-gettext \
+	--enable-openssl-runtime \
+	--extra-cflags="$(CPPFLAGS) $(CFLAGS)" \
+	--extra-ldflags="$(LDFLAGS)"
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	./configure $(CONFIGURE_FLAGS)
+
+override_dh_auto_test:
+ifeq ($(filter nocheck,$(DEB_BUILD_OPTIONS)),)
+	$(MAKE) print-info
+	$(MAKE) test-lib-shared test-lib-static test
+endif
+
+override_dh_auto_install:
+	# Install the program and its translation strings
+	$(MAKE) DESTDIR=$(CURDIR)/debian/rhash install-binary install-data install-symlinks install-gmo
+	# Install static library and so link
+	$(MAKE) DESTDIR=$(CURDIR)/debian/librhash-dev install-lib-static install-lib-so-link install-pkg-config
+	# Install shared library
+	$(MAKE) DESTDIR=$(CURDIR)/debian/librhash0 install-lib-shared
+
+override_dh_auto_clean:
+	[ -f config.mak ] && $(MAKE) distclean || true

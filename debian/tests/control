@@ -1,0 +1,1 @@
+Test-Command: tests/test_rhash.sh /usr/bin/rhash
