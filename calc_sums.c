@@ -28,12 +28,14 @@ static void init_btih_data(struct file_info* info)
 {
 	assert((info->rctx->hash_id & RHASH_BTIH) != 0);
 
+	if (opt.flags & (OPT_BT_PRIVATE | OPT_BT_TRANSMISSION)) {
+		unsigned options = (opt.flags & OPT_BT_PRIVATE ? RHASH_TORRENT_OPT_PRIVATE : 0)
+			| (opt.flags & OPT_BT_TRANSMISSION ? RHASH_TORRENT_OPT_TRANSMISSION : 0);
+		rhash_torrent_set_options(info->rctx, options);
+	}
+
 	rhash_torrent_add_file(info->rctx, file_get_print_path(info->file, FPathUtf8 | FPathNotNull), info->size);
 	rhash_torrent_set_program_name(info->rctx, get_bt_program_name());
-
-	if (opt.flags & OPT_BT_PRIVATE) {
-		rhash_torrent_set_options(info->rctx, RHASH_TORRENT_OPT_PRIVATE);
-	}
 
 	if (opt.bt_announce) {
 		size_t i;
@@ -58,7 +60,7 @@ static void init_btih_data(struct file_info* info)
 static void re_init_rhash_context(struct file_info* info)
 {
 	if (rhash_data.rctx != 0) {
-		if (opt.mode & (MODE_CHECK | MODE_CHECK_EMBEDDED)) {
+		if (IS_MODE(MODE_CHECK | MODE_CHECK_EMBEDDED)) {
 			/* a set of hash algorithms can change from file to file */
 			rhash_free(rhash_data.rctx);
 			rhash_data.rctx = 0;
@@ -107,7 +109,7 @@ int calc_sums(struct file_info* info)
 			return -1;
 #endif
 	} else {
-		if ((opt.mode & (MODE_CHECK | MODE_CHECK_EMBEDDED)) && FILE_ISDIR(info->file)) {
+		if (IS_MODE(MODE_CHECK | MODE_CHECK_EMBEDDED) && FILE_ISDIR(info->file)) {
 			errno = EISDIR;
 			return -1;
 		}
@@ -155,9 +157,9 @@ int calc_sums(struct file_info* info)
 /**
  * Search for a crc32 checksum in the given file name.
  *
- * @param file the file, which filename is checked.
- * @param crc32 pointer to integer to receive parsed checksum.
- * @return non zero if crc32 was found, zero otherwise.
+ * @param file the file, which filename is checked
+ * @param crc32 pointer to integer to receive parsed checksum
+ * @return non zero if crc32 was found, zero otherwise
  */
 int find_embedded_crc32(file_t* file, unsigned* crc32)
 {
@@ -186,7 +188,7 @@ int find_embedded_crc32(file_t* file, unsigned* crc32)
  * Rename the given file by inserting its crc32 sum enclosed into square braces
  * and placing it right before the file extension.
  *
- * @param info pointer to the data of the file to rename.
+ * @param info pointer to the data of the file to rename
  * @return 0 on success, -1 on fail with error code stored in errno
  */
 int rename_file_by_embeding_crc32(struct file_info* info)
@@ -201,7 +203,8 @@ int rename_file_by_embeding_crc32(struct file_info* info)
 		return 0; /* do nothing on stdin or a command-line message */
 
 	assert((info->rctx->hash_id & RHASH_CRC32) != 0);
-	rhash_print(suffix + 2, info->rctx, RHASH_CRC32, RHPR_UPPERCASE);
+	rhash_print(suffix + 2, info->rctx, RHASH_CRC32,
+		(opt.flags & OPT_LOWERCASE ? 0 : RHPR_UPPERCASE));
 
 	/* check if filename already contains a CRC32 sum */
 	if (find_embedded_crc32(info->file, &crc32)) {
@@ -289,7 +292,9 @@ static int save_torrent(struct file_info* info)
 	/* append .torrent extension to the file path */
 	file_t torrent_file;
 	file_modify_path(&torrent_file, info->file, ".torrent", FModifyAppendSuffix);
-	res = save_torrent_to(&torrent_file, info->rctx);
+	res = file_modify_path(&torrent_file, info->file, ".torrent", FModifyAppendSuffix);
+	if (res >= 0)
+		res = save_torrent_to(&torrent_file, info->rctx);
 	file_cleanup(&torrent_file);
 	return res;
 }
@@ -347,12 +352,12 @@ int calculate_and_print_sums(FILE* out, file_t* out_file, file_t* file)
 		rename_file_by_embeding_crc32(&info);
 	}
 
-	if ((opt.mode & MODE_TORRENT) && !opt.bt_batch_file && res == 0) {
+	if (IS_MODE(MODE_TORRENT) && !opt.bt_batch_file && res == 0) {
 		if (save_torrent(&info) < 0)
 			res = -2;
 	}
 
-	if ((opt.mode & MODE_UPDATE) && opt.fmt == FMT_SFV && res == 0) {
+	if (IS_MODE(MODE_UPDATE) && rhash_data.is_sfv && res == 0) {
 		/* updating SFV file: print SFV header line */
 		if (print_sfv_header_line(out, out_file->mode, file) < 0) {
 			log_error_file_t(out_file);
@@ -371,7 +376,7 @@ int calculate_and_print_sums(FILE* out, file_t* out_file, file_t* file)
 				res = -2;
 			}
 			/* print the calculated line to stderr/log-file if verbose */
-			else if ((opt.mode & MODE_UPDATE) && (opt.flags & OPT_VERBOSE)) {
+			else if (IS_MODE(MODE_UPDATE) && (opt.flags & OPT_VERBOSE)) {
 				print_line(rhash_data.log, rhash_data.log_file.mode, rhash_data.print_list, &info);
 			}
 		}
@@ -446,7 +451,7 @@ void run_benchmark(unsigned hash_id, unsigned flags)
 	timedelta_t timer;
 	int i, j;
 	size_t sz_mb, msg_size;
-	double time, total_time = 0;
+	uint64_t time, total_time = 0;
 	const int rounds = 4;
 	const char* hash_name;
 	unsigned char out[130];
@@ -481,7 +486,8 @@ void run_benchmark(unsigned hash_id, unsigned flags)
 		total_time += time;
 
 		if ((flags & BENCHMARK_RAW) == 0 && !rhash_data.stop_flags) {
-			rsh_fprintf(rhash_data.out, "%s %u MiB calculated in %.3f sec, %.3f MBps\n", hash_name, (unsigned)sz_mb, time, (double)sz_mb / time);
+			rsh_fprintf(rhash_data.out, "%s %u MiB calculated in %.3f sec, %.3f MBps\n",
+				hash_name, (unsigned)sz_mb, (time / 1000.0), (double)sz_mb * 1000.0 / time);
 			fflush(rhash_data.out);
 		}
 	}
@@ -518,7 +524,8 @@ void run_benchmark(unsigned hash_id, unsigned flags)
 
 	if (flags & BENCHMARK_RAW) {
 		/* output result in a "raw" machine-readable format */
-		rsh_fprintf(rhash_data.out, "%s\t%u\t%.3f\t%.3f", hash_name, ((unsigned)sz_mb * rounds), total_time, (double)(sz_mb * rounds) / total_time);
+		rsh_fprintf(rhash_data.out, "%s\t%u\t%.3f\t%.3f",
+			hash_name, ((unsigned)sz_mb * rounds), total_time / 1000.0, (double)(sz_mb * rounds) * 1000.0 / total_time);
 #if defined(HAVE_TSC)
 		if (flags & BENCHMARK_CPB) {
 			rsh_fprintf(rhash_data.out, "\t%.2f", cpb);
@@ -526,7 +533,8 @@ void run_benchmark(unsigned hash_id, unsigned flags)
 #endif /* HAVE_TSC */
 		rsh_fprintf(rhash_data.out, "\n");
 	} else {
-		rsh_fprintf(rhash_data.out, "%s %u MiB total in %.3f sec, %.3f MBps", hash_name, ((unsigned)sz_mb * rounds), total_time, (double)(sz_mb * rounds) / total_time);
+		rsh_fprintf(rhash_data.out, "%s %u MiB total in %.3f sec, %.3f MBps",
+			hash_name, ((unsigned)sz_mb * rounds), total_time / 1000.0, (double)(sz_mb * rounds) * 1000.0 / total_time);
 #if defined(HAVE_TSC)
 		if (flags & BENCHMARK_CPB) {
 			rsh_fprintf(rhash_data.out, ", CPB=%.2f", cpb);

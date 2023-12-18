@@ -4,7 +4,7 @@ FILES = Makefile version.properties ChangeLog COPYING
 DESTDIR =
 PREFIX = /usr/local
 RUBY ?= ruby
-PYTHON ?= python
+PYTHON ?= python3
 PERL ?= perl
 PERL_LIBRHASH_TYPE ?= auto
 PERL_OPTIMIZE ?= -O2 -g -Wall
@@ -44,7 +44,7 @@ build-php: configure-php
 	+$(MAKE) -C php
 
 build-python:
-# not required
+	cd python && $(PYTHON) -m build
 
 build-ruby: configure-ruby
 	+$(MAKE) -C ruby
@@ -68,7 +68,7 @@ test-mono:
 	+$(MAKE) -C mono test
 
 test-python:
-	$(PYTHON) python/test_rhash.py
+	cd python && PYTHONPATH=. $(PYTHON) tests/rhash_test.py
 
 install-ruby:
 # clear MAKEFLAGS to overcome ruby1.8 mkmf concurrency bug
@@ -122,4 +122,4 @@ clean-perl:
 clean-php:
 	[ ! -f php/configure ] || (cd php && phpize --clean)
 clean-python:
-	rm -f python/*.pyc
+	rm -rf python/dist/ python/rhash_Rhash.egg-info/ python/tests/__pycache__/

@@ -9,18 +9,6 @@ extern "C" {
 #endif
 
 /**
- * An element of a list specifying an output format.
- */
-typedef struct print_item
-{
-	struct print_item* next;
-	unsigned flags;
-	unsigned hash_id;
-	unsigned width;
-	const char* data;
-} print_item;
-
-/**
  * Name and other info of a hash function
  */
 typedef struct print_hash_info
@@ -35,16 +23,17 @@ extern print_hash_info hash_info_table[];
 
 struct file_info;
 struct file_t;
+struct print_item;
 struct strbuf_t;
 
 /* initialization of static data */
 void init_hash_info_table(void);
-void init_printf_format(struct strbuf_t* out);
+struct strbuf_t* init_printf_format(void);
 
 /* formatted output of message digests and file information */
-print_item* parse_print_string(const char* format, unsigned* sum_mask);
-int print_line(FILE* out, unsigned out_mode, print_item* list, struct file_info* info);
-void free_print_list(print_item* list);
+struct print_item* parse_print_string(const char* format, unsigned* sum_mask);
+int print_line(FILE* out, unsigned out_mode, struct print_item* list, struct file_info* info);
+void free_print_list(struct print_item* list);
 
 /* SFV format functions */
 int print_sfv_banner(FILE* out);

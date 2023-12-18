@@ -6,6 +6,9 @@
 extern "C" {
 #endif
 
+/* compile-time assert */
+#define RHASH_ASSERT(cond) (void)sizeof(char[1 - 2 * !(cond)])
+
 #if (defined(__GNUC__) && __GNUC__ >= 4 && (__GNUC__ > 4 || __GNUC_MINOR__ >= 1) \
 	&& defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)) \
 	|| (defined(__INTEL_COMPILER) && !defined(_WIN32))
@@ -31,14 +34,15 @@ extern "C" {
 #define IS_PTR_ALIGNED_BY(ptr, align) IS_SIZE_ALIGNED_BY((uintptr_t)(ptr), (align))
 
 /* define rhash_aligned_alloc() and rhash_aligned_free() */
-#if defined(_WIN32)
+#if !defined(NO_WIN32_ALIGNED_ALLOC) && defined(_WIN32)
 
 # define HAS_WIN32_ALIGNED_ALLOC
 # include <malloc.h>
 # define rhash_aligned_alloc(alignment, size) _aligned_malloc((size), (alignment))
 # define rhash_aligned_free(ptr) _aligned_free(ptr)
 
-#elif (__STDC_VERSION__ >= 201112L || defined(_ISOC11_SOURCE)) && !defined(__APPLE__)
+#elif !defined(NO_STDC_ALIGNED_ALLOC) && (__STDC_VERSION__ >= 201112L || defined(_ISOC11_SOURCE)) \
+	&& !defined(__APPLE__) && (!defined(__ANDROID_API__) || __ANDROID_API__ >= 28)
 
 # define HAS_STDC_ALIGNED_ALLOC
 # include <stdlib.h>
@@ -49,7 +53,7 @@ extern "C" {
 
 # include "ustd.h" /* for _POSIX_VERSION macro */
 
-# if _POSIX_VERSION >= 200112L || _XOPEN_SOURCE >= 600
+# if !defined(NO_POSIX_ALIGNED_ALLOC) && (_POSIX_VERSION >= 200112L || _XOPEN_SOURCE >= 600)
 
 #  define HAS_POSIX_ALIGNED_ALLOC
 #  include <stdlib.h>
@@ -63,7 +67,7 @@ void* rhash_px_aalloc(size_t size, size_t alignment);
 void* rhash_aligned_alloc(size_t alignment, size_t size);
 void rhash_aligned_free(void* ptr);
 
-# endif /* _POSIX_VERSION >= ... */
+# endif /* !defined(NO_POSIX_ALIGNED_ALLOC) ... */
 #endif /* defined(_WIN32) ... */
 
 #ifdef __cplusplus

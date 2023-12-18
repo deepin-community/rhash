@@ -24,30 +24,35 @@ typedef char opt_tchar;
  */
 enum {
 	/* program modes */
-	MODE_CHECK     = 0x1,
-	MODE_CHECK_EMBEDDED = 0x2,
-	MODE_UPDATE    = 0x4,
-	MODE_BENCHMARK = 0x8,
-	MODE_TORRENT   = 0x10,
+	MODE_DEFAULT   = 0x1,
+	MODE_CHECK     = 0x2,
+	MODE_CHECK_EMBEDDED = 0x4,
+	MODE_UPDATE    = 0x8,
+	MODE_BENCHMARK = 0x10,
+	MODE_TORRENT   = 0x20,
 
 	/* misc options */
+	OPT_VERBOSE    = 0x01,
+	OPT_BRIEF      = 0x02,
 	OPT_EMBED_CRC  = 0x20,
 	OPT_RECURSIVE  = 0x40,
 	OPT_FOLLOW     = 0x80,
 	OPT_SKIP_OK    = 0x100,
-	OPT_IGNORE_CASE = 0x200,
-	OPT_VERBOSE    = 0x400,
+	OPT_IGNORE_MISSING = 0x200,
+	OPT_IGNORE_CASE = 0x400,
 	OPT_PERCENTS   = 0x800,
-	OPT_SPEED      = 0x1000,
-	OPT_BT_PRIVATE = 0x2000,
+	OPT_BT_PRIVATE = 0x1000,
+	OPT_BT_TRANSMISSION = 0x2000,
 	OPT_UPPERCASE  = 0x4000,
 	OPT_LOWERCASE  = 0x8000,
-	OPT_GOST_REVERSE = 0x10000,
+	OPT_SPEED      = 0x10000,
 	OPT_BENCH_RAW  = 0x20000,
 	OPT_NO_DETECT_BY_EXT = 0x40000,
-	OPT_HEX        = 0x040000,
-	OPT_BASE32     = 0x080000,
-	OPT_BASE64     = 0x100000,
+	OPT_NO_PATH_ESCAPING = 0x80000,
+	OPT_GOST_REVERSE = 0x0100000,
+	OPT_HEX        = 0x0200000,
+	OPT_BASE32     = 0x0400000,
+	OPT_BASE64     = 0x0800000,
 	OPT_FMT_MODIFIERS = OPT_HEX | OPT_BASE32 | OPT_BASE64,
 
 #ifdef _WIN32
@@ -57,10 +62,13 @@ enum {
 	OPT_ENCODING = OPT_UTF8 | OPT_ENC_WIN | OPT_ENC_DOS,
 #endif
 
-	FMT_BSD     = 1,
-	FMT_SFV     = 2,
-	FMT_SIMPLE  = 4,
-	FMT_MAGNET  = 8,
+	FMT_BSD    = 0x01,
+	FMT_SFV    = 0x02,
+	FMT_SIMPLE = 0x04,
+	FMT_MAGNET = 0x08,
+	FMT_PRINTF = 0x10,
+	FMT_FILE_TEMPLATE = 0x20,
+	FMT_PRINTF_MASK = FMT_PRINTF | FMT_FILE_TEMPLATE,
 };
 
 #define OPT_ED2K_LINK 0x80000000
@@ -98,6 +106,9 @@ struct options_t
 	struct vector_t* mem; /* allocated memory blocks that must be freed on exit */
 };
 extern struct options_t opt;
+
+#define IS_MODE(mode_bits) (opt.mode & (mode_bits))
+#define HAS_OPTION(option_bits) (opt.flags & (option_bits))
 
 void read_options(int argc, char* argv[]);
 void options_destroy(struct options_t*);

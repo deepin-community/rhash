@@ -9,8 +9,8 @@ LIB_HEADERS = rhash.h rhash_torrent.h
 SO_HEADERS = $(LIB_HEADERS) $(LEGACY_HEADERS)
 TEST_STATIC = test_static$(EXEC_EXT)
 TEST_SHARED = test_shared$(EXEC_EXT)
-INSTALL_DATA    = $(INSTALL) -m 644
-INSTALL_SHARED  = $(INSTALL) -m 644
+INSTALL_DATA = $(INSTALL) -m 644
+INSTALL_SHARED = $(INSTALL) -m $(SHARED_LIB_MODE)
 
 all: $(BUILD_TARGETS)
 lib-static: $(LIBRHASH_STATIC)
@@ -31,7 +31,7 @@ install-lib-shared: $(LIBRHASH_SHARED) $(EXTRA_INSTALL_LIBSHARED)
 
 install-implib:
 	$(INSTALL) -d $(LIBDIR)
-	$(INSTALL_SHARED) $(LIBRHASH_IMPLIB) $(LIBDIR)/
+	$(INSTALL_DATA) $(LIBRHASH_IMPLIB) $(LIBDIR)/
 
 install-so-link:
 	$(INSTALL) -d $(LIBDIR)
@@ -141,8 +141,8 @@ sha512.o: sha512.c byte_order.h ustd.h sha512.h
 snefru.o: snefru.c byte_order.h ustd.h snefru.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
-test_hashes.o: test_hashes.c byte_order.h ustd.h rhash_timing.h \
- rhash_torrent.h rhash.h test_hashes.h util.h
+test_lib.o: test_lib.c byte_order.h ustd.h rhash_timing.h \
+ rhash_torrent.h rhash.h test_lib.h util.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
 tiger.o: tiger.c byte_order.h ustd.h tiger.h
@@ -180,14 +180,15 @@ $(LIBRHASH_SHARED): $(SOURCES) $(EXPORTS_TARGET) $(SOLINK_TARGET)
 
 # build static library
 $(LIBRHASH_STATIC): $(OBJECTS)
-	$(AR) cqs $@ $(OBJECTS)
+	rm -f $@
+	$(AR) -cqs $@ $(OBJECTS)
 
 # test targets
-$(TEST_SHARED): $(LIBRHASH_SHARED) test_hashes.o
-	$(CC) $(CFLAGS) test_hashes.o $(LIBRHASH_SHARED) $(LDFLAGS) -o $@
+$(TEST_SHARED): $(LIBRHASH_SHARED) test_lib.o
+	$(CC) $(CFLAGS) test_lib.o $(LIBRHASH_SHARED) $(LDFLAGS) -o $@
 
-$(TEST_STATIC): $(LIBRHASH_STATIC) test_hashes.o
-	$(CC) $(CFLAGS) test_hashes.o $(LIBRHASH_STATIC) $(BIN_STATIC_LDFLAGS) -o $@
+$(TEST_STATIC): $(LIBRHASH_STATIC) test_lib.o
+	$(CC) $(CFLAGS) test_lib.o $(LIBRHASH_STATIC) $(BIN_STATIC_LDFLAGS) -o $@
 
 test: $(TEST_TARGETS)
 test-static: $(TEST_STATIC)

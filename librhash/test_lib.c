@@ -1,4 +1,4 @@
-/* test_hashes.c - unit tests and benchmark for LibRHash algorithms
+/* test_lib.c - unit tests and benchmark for LibRHash algorithms
  *
  * Copyright (c) 2008, Aleksey Kravchenko <rhash.admin@gmail.com>
  *
@@ -29,14 +29,14 @@
 # define RHASH_API __declspec(dllimport)
 #endif
 #include "rhash.h"
-#include "test_hashes.h"
+#include "test_lib.h"
 
 /*=========================================================================*
  *                              Test vectors                               *
  *=========================================================================*/
 
- /* verified by cksfv */
- const char* crc32_tests[] = {
+/* verified by cksfv */
+const char* crc32_tests[] = {
 	"", "00000000",
 	"a", "E8B7BE43",
 	"abc", "352441C2",
@@ -48,7 +48,7 @@
 	0
 };
 
- const char* crc32c_tests[] = {
+const char* crc32c_tests[] = {
 	"", "00000000",
 	"a", "C1D04330",
 	"abc", "364B3FB7",
@@ -941,6 +941,33 @@ static void test_chunk_size_consistency(void)
 }
 
 /**
+ * Verify alignment of a hash function context, which is located inside of rhash context.
+ */
+static void test_context_alignment(void)
+{
+	const size_t aligner = 63;
+	int i;
+	unsigned hash_ids[32];
+	for (i = 0; i < 32; i++)
+	{
+		size_t count = i + 1;
+		rhash ctx;
+		char* context_ptr;
+		hash_ids[i] = RHASH_MD5;
+		ctx = rhash_init_multi(count, hash_ids);
+		assert(!!ctx);
+		context_ptr = (char*)rhash_get_context_ptr(ctx, RHASH_MD5);
+		if (((context_ptr - (char*)0) & aligner) != 0) {
+			log_message("error: wrong aligment %d of pointer %p for the %2d-th context (rhash = %p)\n",
+				(int)((context_ptr - (char*)0) & aligner), context_ptr, i, ctx);
+			g_errors++;
+		}
+		rhash_free(ctx);
+		hash_ids[i] = RHASH_CRC32;
+	}
+}
+
+/**
  * Verify processor endianness detected at compile-time against
  * with the actual CPU endianness in runtime.
  */
@@ -975,6 +1002,79 @@ static void test_generic_assumptions(void)
 
 	test_endianness();
 	test_version_sanity();
+}
+
+static void test_import_export(void)
+{
+#if !defined(NO_IMPORT_EXPORT)
+	unsigned hash_mask = RHASH_ALL_HASHES;
+	uint8_t data[241];
+	size_t i;
+	size_t min_sizes[3] = { 0, 1024, 8192 };
+	for (i = 0; i < sizeof(data); i++)
+		data[i] = (uint8_t)i;
+	for(i = 0; i < 3; i++) {
+		size_t min_size = min_sizes[i];
+		size_t size = 0;
+		size_t required_size;
+		size_t exported_size;
+		void* exported_data;
+		rhash ctx = rhash_init(hash_mask);
+		rhash imported_ctx;
+		unsigned hash_id;
+		for (; size < min_size; size += sizeof(data))
+			rhash_update(ctx, data, sizeof(data));
+		if ((hash_mask & RHASH_BTIH) != 0) {
+			rhash_torrent_set_program_name(ctx, "test");
+			rhash_torrent_add_announce(ctx, "url1");
+			rhash_torrent_add_announce(ctx, "url2");
+			rhash_torrent_add_file(ctx, "file1", 1);
+			rhash_torrent_add_file(ctx, "file2", 22);
+			rhash_torrent_set_options(ctx, RHASH_TORRENT_OPT_PRIVATE);
+			if ((i & 1) != 0)
+				rhash_final(ctx, 0);
+		}
+		required_size = rhash_export(ctx, NULL, 0);
+		if (!required_size) {
+			log_message("error: rhash_export failed for block size=%u\n", (unsigned)size);
+			g_errors++;
+			return;
+		}
+		exported_data = malloc(required_size);
+		exported_size = rhash_export(ctx, exported_data, required_size);
+		if (exported_size != required_size) {
+			log_message("error: rhash_export failed: %u != %u\n", (unsigned)exported_size, (unsigned)required_size);
+			g_errors++;
+			return;
+		}
+		imported_ctx = rhash_import(exported_data, required_size);
+		if (!imported_ctx) {
+			log_message("error: rhash_import failed for block size=%u\n", (unsigned)size);
+			g_errors++;
+			return;
+		}
+		free(exported_data);
+		rhash_final(ctx, 0);
+		rhash_final(imported_ctx, 0);
+		exported_data = NULL;
+		for (hash_id = 1; hash_id < hash_mask; hash_id <<= 1) {
+			if ((hash_id & hash_mask) != 0) {
+				static char out1[240], out2[240];
+				rhash_print(out1, ctx, hash_id, RHPR_UPPERCASE);
+				rhash_print(out2, imported_ctx, hash_id, RHPR_UPPERCASE);
+				if (strcmp(out1, out2) != 0) {
+					const char* hash_name = rhash_get_name(hash_id);
+					log_message("error: import failed, wrong hash %s != %s for %s,  block size=%u\n",
+						out1, out2, hash_name, (unsigned)size);
+					g_errors++;
+					return;
+				}
+			}
+		}
+		rhash_free(ctx);
+		rhash_free(imported_ctx);
+	}
+#endif /* !defined(NO_IMPORT_EXPORT) */
 }
 
 #define TEST_PATH 0x4000000
@@ -1120,13 +1220,14 @@ int main(int argc, char* argv[])
 		test_results_consistency();
 		test_unaligned_messages_consistency();
 		test_chunk_size_consistency();
+		test_context_alignment();
+		test_import_export();
 		test_magnet();
 		if (g_errors == 0)
 			printf("All sums are working properly!\n");
 		fflush(stdout);
 	}
-
-	if (g_errors > 0) printf("%s", compiler_flags);
-
+	if (g_errors > 0)
+		printf("%s", compiler_flags);
 	return (g_errors == 0 ? 0 : 1);
 }

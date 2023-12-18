@@ -22,6 +22,7 @@ INSTALL_SYMLINKS="sfv-hash has160-hash gost12-256-hash gost12-512-hash edonr256-
 INSTALL_LIB_STATIC=auto
 INSTALL_LIB_SHARED=auto
 INSTALL_PKGCONFIGDIR="$PKG_INSTALLDIR"
+SHARED_LIB_MODE=${SHARED_LIB_MODE:-755}
 
 # detect and prepare tmp directory
 for DETECT_TMP in "$TMPDIR" "$TEMPDIR" "/tmp"; do
@@ -500,7 +501,7 @@ if test "$(basename $CC)" = "icc" || test "$(basename $CC)" = "ecc"; then
       cc_version="v. ?.??, bad"
       cc_fail=yes
       ;;
-    10.1|11.1|12.*|13.*)
+    10.1|11.1|12.*|13.*|20*)
       cc_version="$cc_version, ok"
       ;;
     *)
@@ -519,38 +520,36 @@ else
     elif run_cmd "$CC --version"; then
       cc_name_tmp=$($CC --version 2>&1 | head -n 1 | cut -d ' ' -f 1)
     fi
-    if test -n "${cc_name_tmp}"; then
-      if echo "$cc_name_tmp" | grep -q "gcc"; then
-        cc_name=$cc_name_tmp
-        start_check "$CC version"
-        cc_vendor=gnu
-        cc_version=$($CC -dumpversion 2>&1)
-        if ! echo $cc_version | grep -q '^[0-9][0-9]*\.[0-9]'; then
-          cc_v2=$($CC -dumpfullversion -dumpversion 2>/dev/null)
-          if echo $cc_v2 | grep -q '^[0-9][0-9]*\.[0-9]'; then
-            cc_version=$cc_v2
-          fi
+    if echo "$cc_name_tmp" | grep -q "gcc"; then
+      cc_name=$cc_name_tmp
+      start_check "$CC version"
+      cc_vendor=gnu
+      cc_version=$($CC -dumpversion 2>&1)
+      if ! echo $cc_version | grep -q '^[0-9][0-9]*\.[0-9]'; then
+        cc_v2=$($CC -dumpfullversion -dumpversion 2>/dev/null)
+        if echo $cc_v2 | grep -q '^[0-9][0-9]*\.[0-9]'; then
+          cc_version=$cc_v2
         fi
-        case $cc_version in
-          2.96*)
-            cc_fail=yes
-            ;;
-          *)
-            _cc_major=$(echo $cc_version | cut -d '.' -f 1)
-            _cc_minor=$(echo $cc_version | cut -d '.' -f 2)
-            _cc_mini=$(echo $cc_version | cut -d '.' -f 3)
-            ;;
-        esac
-        finish_check "$cc_name $cc_version"
-        break
       fi
-      if echo "$cc_name_tmp" | grep -q "clang"; then
-        start_check "$CC version"
-        cc_vendor=clang
-        cc_version=$($CC -dumpversion 2>&1)
-        finish_check "clang $cc_version"
-        break
-      fi
+      case $cc_version in
+        2.96*)
+          cc_fail=yes
+          ;;
+        *)
+          _cc_major=$(echo $cc_version | cut -d '.' -f 1)
+          _cc_minor=$(echo $cc_version | cut -d '.' -f 2)
+          _cc_mini=$(echo $cc_version | cut -d '.' -f 3)
+          ;;
+      esac
+      finish_check "$cc_name $cc_version"
+      break
+    elif $CC --version 2>&1 | grep -q "clang"; then
+      start_check "$CC version"
+      cc_vendor=clang
+      cc_version=$($CC -dumpversion 2>&1)
+      finish_check "clang $cc_version"
+      break
+    else
       cc_name_tmp=$($CC -V 2>&1 | head -n 1 | cut -d ' ' -f 2,3)
       if test "$cc_name_tmp" = "Sun C"; then
         start_check "$CC version"
@@ -932,6 +931,7 @@ EXPORTS_TARGET   = $LIBRHASH_EXPORTS_TARGET
 BUILD_TARGETS    = $LIBRHASH_BUILD_TARGETS
 TEST_TARGETS     = $LIBRHASH_TEST_TARGETS
 SOLINK_TARGET    = $LIBRHASH_SOLINK_TARGET
+SHARED_LIB_MODE  = $SHARED_LIB_MODE
 EXTRA_INSTALL_LIBSHARED   = $EXTRA_INSTALL_LIBSHARED
 EXTRA_UNINSTALL_LIBSHARED = $EXTRA_UNINSTALL_LIBSHARED
 
