@@ -370,7 +370,7 @@ static int print_check_result(struct file_info* info, int print_name, int print_
  */
 static int print_results_on_check(struct file_info* info, int init)
 {
-	if (opt.mode & (MODE_CHECK | MODE_CHECK_EMBEDDED)) {
+	if (IS_MODE(MODE_CHECK | MODE_CHECK_EMBEDDED)) {
 		int print_name = (opt.flags & (OPT_PERCENTS | OPT_SKIP_OK) ? !init : init);
 
 		/* print result, but skip OK messages if required */
@@ -457,7 +457,7 @@ static void dots_update_percents(struct file_info* info, uint64_t offset)
 	if ( (offset % pt_size) != 0 ) return;
 
 	if (percents.points == 0) {
-		if (opt.mode & (MODE_CHECK | MODE_CHECK_EMBEDDED)) {
+		if (IS_MODE(MODE_CHECK | MODE_CHECK_EMBEDDED)) {
 			rsh_fprintf(rhash_data.log, _("\nChecking %s\n"), file_get_print_path(info->file, FPathPrimaryEncoding | FPathNotNull));
 		} else {
 			rsh_fprintf(rhash_data.log, _("\nProcessing %s\n"), file_get_print_path(info->file, FPathPrimaryEncoding | FPathNotNull));
@@ -546,7 +546,7 @@ static void p_update_percents(struct file_info* info, uint64_t offset)
  */
 static int p_finish_percents(struct file_info* info, int process_res)
 {
-	int need_check_result = (opt.mode & (MODE_CHECK | MODE_CHECK_EMBEDDED)) &&
+	int need_check_result = IS_MODE(MODE_CHECK | MODE_CHECK_EMBEDDED) &&
 		!((opt.flags & OPT_SKIP_OK) && process_res == 0 && !HP_FAILED(info->hp->bit_flags));
 	info->processing_result = process_res;
 
@@ -634,13 +634,18 @@ void setup_percents(void)
  */
 int print_verifying_header(file_t* file)
 {
-	char dash_line[84];
-	int count = fprintf_file_t(rhash_data.out, _("\n--( Verifying %s )"), file, OutCountSymbols);
-	int tail_dash_len = (0 < count && count < 81 ? 81 - count : 2);
-	int res = rsh_fprintf(rhash_data.out, "%s\n", str_set(dash_line, '-', tail_dash_len));
-	if (res >= 0)
-		res = fflush(rhash_data.out);
-	return (count < 0 ? count : res);
+	if ((opt.flags & OPT_BRIEF) == 0)
+	{
+		char dash_line[84];
+		/* TRANSLATORS: the line printed before a hash file is verified */
+		int count = fprintf_file_t(rhash_data.out, _("\n--( Verifying %s )"), file, OutCountSymbols);
+		int tail_dash_len = (0 < count && count < 81 ? 81 - count : 2);
+		int res = rsh_fprintf(rhash_data.out, "%s\n", str_set(dash_line, '-', tail_dash_len));
+		if (res >= 0)
+			res = fflush(rhash_data.out);
+		return (count < 0 ? count : res);
+	}
+	return 0;
 }
 
 /**
@@ -651,7 +656,8 @@ int print_verifying_header(file_t* file)
 int print_verifying_footer(void)
 {
 	char dash_line[84];
-	return rsh_fprintf(rhash_data.out, "%s\n", str_set(dash_line, '-', 80));
+	return (opt.flags & OPT_BRIEF ? 0 :
+		rsh_fprintf(rhash_data.out, "%s\n", str_set(dash_line, '-', 80)));
 }
 
 /**
@@ -685,14 +691,19 @@ void print_file_time_stats(struct file_info* info)
 
 /**
  * Print processing time statistics.
+ *
+ * @param time time in milliseconds
+ * @param size total size of the processed data
+ * @param total boolean flag, to print total or per-file result
  */
-void print_time_stats(double time, uint64_t size, int total)
+void print_time_stats(uint64_t time, uint64_t size, int total)
 {
-	double speed = (time == 0 ? 0 : (double)(int64_t)size / 1048576.0 / time);
+	double seconds = (double)(int64_t)time / 1000.0;
+	double speed = (time == 0 ? 0 : (double)(int64_t)size / 1048576.0 / seconds);
 	if (total) {
-		rsh_fprintf(rhash_data.log, _("Total %.3f sec, %4.2f MBps\n"), time, speed);
+		rsh_fprintf(rhash_data.log, _("Total %.3f sec, %4.2f MBps\n"), seconds, speed);
 	} else {
-		rsh_fprintf(rhash_data.log, _("Calculated in %.3f sec, %4.2f MBps\n"), time, speed);
+		rsh_fprintf(rhash_data.log, _("Calculated in %.3f sec, %4.2f MBps\n"), seconds, speed);
 	}
 	fflush(rhash_data.log);
 }

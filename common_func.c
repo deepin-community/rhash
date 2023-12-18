@@ -231,25 +231,6 @@ const char* get_bt_program_name(void)
  * Timer functions
  *=========================================================================*/
 
-/**
- * Return real-value representing number of seconds
- * stored in the given timeval structure.
- * The function is used with timers, when printing time statistics.
- *
- * @param delta time delta to be converted
- * @return number of seconds
- */
-static double rsh_fsec(timedelta_t* timer)
-{
-#if defined( _WIN32) || defined(__CYGWIN__)
-	LARGE_INTEGER freq;
-	QueryPerformanceFrequency(&freq);
-	return (double)*timer / freq.QuadPart;
-#else
-	return ((double)timer->tv_usec / 1000000.0) + timer->tv_sec;
-#endif
-}
-
 #if defined( _WIN32) || defined(__CYGWIN__)
 #define get_timedelta(delta) QueryPerformanceCounter((LARGE_INTEGER*)delta)
 #else
@@ -261,17 +242,21 @@ void rsh_timer_start(timedelta_t* timer)
 	get_timedelta(timer);
 }
 
-double rsh_timer_stop(timedelta_t* timer)
+uint64_t rsh_timer_stop(timedelta_t* timer)
 {
 	timedelta_t end;
-	get_timedelta(&end);
 #if defined( _WIN32) || defined(__CYGWIN__)
+	LARGE_INTEGER frequency;
+	get_timedelta(&end);
 	*timer = end - *timer;
+	QueryPerformanceFrequency(&frequency);
+	return (uint64_t)((LONGLONG)(*timer) * 1000 / frequency.QuadPart);
 #else
+	get_timedelta(&end);
 	timer->tv_sec  = end.tv_sec  - timer->tv_sec - (end.tv_usec >= timer->tv_usec ? 0 : 1);
 	timer->tv_usec = end.tv_usec + (end.tv_usec >= timer->tv_usec ? 0 : 1000000 ) - timer->tv_usec;
+	return ((uint64_t)(timer->tv_sec) * 1000 + timer->tv_usec / 1000);
 #endif
-	return rsh_fsec(timer);
 }
 
 unsigned rhash_get_ticks(void)
@@ -653,7 +638,7 @@ void rsh_str_ensure_size(strbuf_t* str, size_t new_size)
  *
  * @param str pointer to the string buffer
  * @param text the text to append
- * @param length number of character to append.
+ * @param length number of character to append
  */
 void rsh_str_append_n(strbuf_t* str, const char* text, size_t length)
 {

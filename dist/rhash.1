@@ -47,11 +47,12 @@ and that significally slows down files verification. To speed up verification,
 in such case, explicitly specify the hash algorithm in the command line.
 .IP "\-u, \-\-update=<hash-file>"
 Update the hash file specified by the option.
-Checksums will be calculated for all files specified by command and not present
-in this hash file. The calculated checksums will be appended to the
-updated hash file in the format specified by formatting options.
-This option can be combined with \-\-recursive, to update a hash file for
-whole directory trees.
+Message digests will be calculated for all files specified by the command line and
+not present in this hash file. The calculated Message digests will be appended to
+the updated hash file in the format specified by formatting options.
+The \-\-update option can be combined with \-\-recursive to update a hash file for
+whole directory trees. Also \-\-update option can be used with \-\-check
+to verify the hash file before updating it.
 .IP "\-k, \-\-check\-embedded"
 Verify files by crc32 sum embedded in their names.
 .IP "\-\-torrent"
@@ -122,20 +123,25 @@ List names of all supported hash functions, one per line.
 .SH MISCELLANEOUS OPTIONS
 .IP "\-r, \-\-recursive"
 Recursively process directories, specified by command line.
+.IP "\-\-follow"
+Follow symbolic links when processing files or directories recursively.
+.IP "\-m, \-\-message=<text>"
+Calculate message digests of the given text message.
 .IP "\-\-file\-list=<file>"
 Process given file as a file-list. Lines of this file are
 interpreted as paths to files to be processed. Multiple
 file lists can be specified at command line.
-.IP "\-m, \-\-message=<text>"
-Calculate message digests of the given text message.
-.IP "\-\-follow"
-Follow symbolic links when processing files or directories recursively.
 .IP "\-v, \-\-verbose"
 Be verbose.
+.IP "\-\-brief"
+Print brief form of verification report (without a header and footer),
+when verifying a hash file.
 .IP "\-P, \-\-percents"
 Show percents, while calculating or checking sums
 .IP "\-\-skip\-ok"
 Don't print OK messages for successfully verified files.
+.IP "\-i, \-\-ignore\-missing"
+Ignore missing files, while verifying a hash file.
 .IP "\-i, \-\-ignore\-case"
 Ignore case of filenames when updating crc files.
 .IP "\-\-speed"
@@ -174,7 +180,9 @@ Turn on torrent batch mode (implies torrent mode). Calculates batch-torrent
 for the files specified at command line and saves the torrent file to
 the file\-path. The option \-r <directory> can be useful in this mode.
 .IP "\-\-bt\-private"
-Generate BTIH for a private BitTorrent tracker.
+Generate torrent file or BTIH for a private BitTorrent tracker.
+.IP "\-\-bt\-transmission"
+Generate torrent file or BTIH compatible with Transmission torrent client.
 .IP "\-\-bt\-piece\-length"
 Set the
 .I "piece length"
@@ -188,7 +196,10 @@ Switch benchmark output format to be a machine\(hyreadable tab\(hydelimited text
 with hash function name, speed, cpu clocks per byte.
 This option works only if the \-\-benchmark option was specified.
 .IP "\-\-no\-detect\-by\-ext"
-Disable hash function detection from a hash file extension in the \-\-check mode.
+Do not detect hash function by an extension of hash file, in the \-\-check mode.
+.IP "\-\-no\-path\-escaping"
+Turn off escape characters in file paths. The option can be specified in the
+default, check or update modes.
 .IP "\-\- (double dash)"
 Mark the end of command line options. All parameters following the
 double dash are interpreted as files or directories. It is typically used
@@ -213,7 +224,7 @@ filename and message digests specified by options.
 Print message digests in hexadecimal format.
 .IP "\-\-base32"
 Print message digests in Base32 format.
-.IP "\-\-base64"
+.IP "\-b, \-\-base64"
 Print message digests in Base64 format.
 .IP "\-\-uppercase"
 Print message digests in upper case.

@@ -1,0 +1,11 @@
+Description: Fix the program version reported by `rhash --version`
+Origin: upstream, https://github.com/rhash/RHash/commit/01bcf3b6163a1e43845fbc08efe9ff551534db3c
+Last-Update: 2022-06-23
+Forwarded: not-needed
+
+diff --git a/version.h b/version.h
+--- a/version.h
++++ b/version.h
+@@ -1 +1 @@
+-#define VERSION "1.4.2"
++#define VERSION "1.4.3"

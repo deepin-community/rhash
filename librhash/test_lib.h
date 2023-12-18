@@ -1,6 +1,6 @@
-/* test_hashes.h - detect compiler defines */
-#ifndef TEST_HASHES_H
-#define TEST_HASHES_H
+/* test_lib.h - detect compiler defines */
+#ifndef TEST_LIB_H
+#define TEST_LIB_H
 
 #include "byte_order.h"
 #include "util.h"
@@ -197,6 +197,9 @@ char* compiler_flags = "Compile-time flags:"
 #ifdef _XOPEN_SOURCE
 	" _XOPEN_SOURCE=" EXPAND_TO_STRING(_XOPEN_SOURCE)
 #endif
+#ifdef __ANDROID_API__
+	" __ANDROID_API__=" EXPAND_TO_STRING(__ANDROID_API__)
+#endif
 #ifdef __STRICT_ANSI__
 	" __STRICT_ANSI__"
 #endif
@@ -311,4 +314,4 @@ char* compiler_flags = "Compile-time flags:"
 #endif
 	"\n";
 
-#endif /* TEST_HASHES_H */
+#endif /* TEST_LIB_H */
